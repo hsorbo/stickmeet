@@ -1,4 +1,4 @@
-﻿namespace StickMeet.Core
+namespace StickMeet.Core
 open Ariane.SaveFile.Contract
 open FSharp.FGL
 open System
@@ -27,14 +27,14 @@ module SurveyData =
     let private srvdToSurveyData (x:CaveFileDataSRVD) = 
         {
             Azimut = x.AZ
-            ClosureToId = int x.CID
+            ClosureToId = x.CID
             Color = x.CL
             Comment = x.CM
             Date = x.DT
             Depth = x.DP
             Explorer = x.EX
-            FromId = int x.FRID
-            Id = int x.ID
+            FromId = x.FRID
+            Id = x.ID
             Inclination = x.INC
             Latitude = x.LT
             Length = x.LG
