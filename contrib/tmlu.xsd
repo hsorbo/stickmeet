@@ -156,6 +156,7 @@
                                                 <xs:restriction base="xs:string">
                                                     <xs:enumeration value="REAL" />
                                                     <xs:enumeration value="CLOSURE" />
+                                                    <xs:enumeration value="VIRTUAL" />
                                                     <xs:enumeration value="START" />
                                                 </xs:restriction>
                                             </xs:simpleType>

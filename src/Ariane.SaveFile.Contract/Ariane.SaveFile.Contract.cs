@@ -691,6 +691,8 @@ namespace Ariane.SaveFile.Contract
         
         CLOSURE,
         
+        VIRTUAL,
+        
         START,
     }
     
