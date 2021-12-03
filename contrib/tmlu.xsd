@@ -107,7 +107,7 @@
                                         <xs:element name="EXC" type="xs:boolean" />
                                         <xs:element name="EX" type="xs:string" />
                                         <xs:element name="FRID" type="xs:int" />
-                                        <xs:element name="ID" type="xs:nonNegativeInteger" />
+                                        <xs:element name="ID" type="xs:int" />
                                         <xs:element name="INC" type="xs:float" />
                                         <xs:element name="LT" type="xs:decimal" />
                                         <xs:element name="L" type="xs:float" />

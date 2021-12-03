@@ -505,7 +505,7 @@ namespace Ariane.SaveFile.Contract
         
         [System.ComponentModel.DataAnnotations.RequiredAttribute()]
         [System.Xml.Serialization.XmlElementAttribute("ID", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
-        public string ID { get; set; }
+        public int ID { get; set; }
         
         [System.ComponentModel.DataAnnotations.RequiredAttribute()]
         [System.Xml.Serialization.XmlElementAttribute("INC", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
