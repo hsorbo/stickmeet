@@ -29,6 +29,6 @@ jobs:
     - name: Pack 
       working-directory: src
       run: |
-        dotnet pack --no-build Ariane.SaveFile.Contract -o artifacts
-        dotnet pack --no-build StickMeet.Cli -o artifacts
+        dotnet pack Ariane.SaveFile.Contract -o artifacts
+        dotnet pack StickMeet.Cli -o artifacts
       
