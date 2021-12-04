@@ -33,5 +33,5 @@ jobs:
       run: |
         dotnet pack Ariane.SaveFile.Contract -o artifacts
         dotnet pack StickMeet.Cli -o artifacts
-        nuget push artifacts/Ariane.SaveFile.Contract.1.0.0.nupkg $SUPER_SECRET -Source https://www.myget.org/F/stickmeet/api/v2/package
+        nuget push artifacts/Ariane.SaveFile.Contract.1.0.0.nupkg $MYGET_SECRET -Source https://www.myget.org/F/stickmeet/api/v2/package
       
