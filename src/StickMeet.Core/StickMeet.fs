@@ -87,39 +87,6 @@ type Line = {
     Length: float32
 }
 
-type Location = {Latitude:double;Longitude:double}
-type Bearing = {Azimuth:float;Distance:float}
-module Location =
-    //https://javascript.plainenglish.io/calculating-azimuth-distance-and-altitude-from-a-pair-of-gps-locations-36b4325d8ab0
-
-    let private earthRadius1 = 6378137.
-    let oslo = {Latitude = 59.913869; Longitude=10.752245}
-    let bergen = {Latitude = 60.3912628; Longitude=5.3220544}
-    let rad x = (Math.PI / 180.0) * x
-    let deg x = (180.0 / Math.PI) * x
-    let positiveAngle x = (3600000. + x) % 360.
-    let map m (x:Location) = { Latitude = m x.Latitude; Longitude = m x.Longitude}
-    let combine m (x:Location) (y:Location) = {Latitude = m x.Latitude y.Latitude; Longitude = m x.Longitude y.Longitude}
-
-    let private haversine r1 r2 = 
-        let delta = combine (-) r2 r1
-        let d3 = sin(delta.Latitude / 2.0) ** 2. + cos r1.Latitude * cos r2.Latitude * sin(delta.Longitude / 2.0) ** 2.0
-        6376500.0 * 2.0 * Math.Atan2(sqrt d3, sqrt(1.0 - d3))
-
-    let private calcAzimuthIn r1 r2 =
-        let d = combine (-) r2 r1
-        let b = (cos (r1.Latitude) * sin (r2.Latitude) - sin (r1.Latitude) * cos (r2.Latitude) * cos (d.Longitude))
-        Math.Atan2(sin (d.Longitude) * cos (r2.Latitude),b) |> deg |> positiveAngle
-
-    let calcAzimuth p1 p2 = calcAzimuthIn (p1 |> map rad) (p2 |> map rad)
-    let calcDistance p1 p2 = haversine (map rad p1) (map rad p2)
-    
-    let getBearing (p1:Location) (p2:Location) =
-        let (r1,r2)=(map rad p1, map rad p2)
-        {Azimuth = calcAzimuthIn r1 r2; Distance = haversine r1 r2}
-
-
-
 
 type CaveGraph = Graph<SurveyData,string,Line>
 module CaveGraph = 

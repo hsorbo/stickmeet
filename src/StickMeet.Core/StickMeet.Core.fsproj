@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Geolib.fs" />
     <Compile Include="StickMeet.fs" />
   </ItemGroup>
   
