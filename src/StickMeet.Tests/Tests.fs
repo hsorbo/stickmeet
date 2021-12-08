@@ -9,10 +9,9 @@ let between (a:double) b v = v <= Math.Max(a,b) && v >= Math.Min(a,b)
 [<Fact>]
 let ``parseExplorerSection parses`` () =
     let example = "<Explorer>Super Ted, Daffy Duck</Explorer><Surveyor>No Way, Jose</Surveyor>"
-    test<@ 
-        let (explorers, _) = CaveGraph.parseExplorerSection "," example 
-        explorers |> Seq.contains "Super Ted"
-        @>
+    //let exampletodo = "<Explorer>Super Ted, Daffy Duck</Explorer>"
+    //let exampletodo2 = "Super Ted"
+    test<@ (CaveWorker.parseExplorerSection "," example).Explorers |> Seq.contains "Super Ted" @>
 
 module GeolibTests =
     let london = {Latitude = 51.50; Longitude = 0.0}

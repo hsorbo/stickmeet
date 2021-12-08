@@ -4,7 +4,7 @@ open FSharp.FGL
 open System
 
 type CaveWorker = { Suerveyors:string list; Explorers:string list}
-module CaveWoker = 
+module CaveWorker = 
     open System.Text.RegularExpressions
     let rxMatch (rx:Regex) s =
         let m = rx.Match(s)
@@ -128,9 +128,6 @@ module CaveGraph =
     let calculateMapDistance caveGraph =
         caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.f
 
-    let parseExplorerSection (delim:string) (s:string) =
-        CaveWoker.parseExplorerSection delim s
-
     let private addOrCreate k v map = map |> Map.change k (function | None -> v |> Some | Some y -> Some(y + v))
     
     let calcSwimLength (binner:StatBinner) (caveGraph:CaveGraph) = 
@@ -153,7 +150,7 @@ module CaveGraph =
 
     let calcBinnedSwimLength binner (caveGraph:CaveGraph) = 
         let f (from:SurveyData) (too:SurveyData) (line:Line) = 
-                let exp = parseExplorerSection "," too.Explorer
+                let exp = CaveWorker.parseExplorerSection "," too.Explorer
                 match binner with
                 | Explorer -> exp.Explorers |> defaultIfEmpty "UNKNOWN" |> List.append ["TOTAL"] 
                 | Surveyor -> exp.Suerveyors |> defaultIfEmpty "UNKNOWN" |> List.append ["TOTAL"]
