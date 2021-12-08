@@ -4,10 +4,12 @@ open System
 
 type StatsArguments =
     | [<MainCommand>] File of filename:string
+    | Bin of CaveGraph.Binning
     interface IArgParserTemplate with
         member s.Usage =
             match s with
             | File _ -> "Filename"
+            | Bin _ -> "Bin by" 
 
 type Arguments = 
 | [<CliPrefix(CliPrefix.None)>] Stats of ParseResults<StatsArguments>
@@ -17,11 +19,11 @@ type Arguments =
             | Stats _ -> "stats"
 
 
-let swimStats filename =
+let swimStats filename binner =
     filename 
         |> Tmlu.openTmlu  
         |> Tmlu.toGraph
-        |> CaveGraph.calcSwimLengthExplorers "," 
+        |> CaveGraph.calcBinnedSwimLength binner
         |> Map.toList 
         |> List.sortBy snd 
         |> Seq.iter (printfn "%A") 
@@ -33,6 +35,6 @@ let main args =
     let arguments = parser.ParseCommandLine args 
     match arguments.GetSubCommand () with
     | Stats statsArgs -> 
-        statsArgs.GetResult(File) |> swimStats
+        swimStats (statsArgs.GetResult(File)) (statsArgs.GetResult(Bin))
     0
 

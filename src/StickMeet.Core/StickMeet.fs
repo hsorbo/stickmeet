@@ -87,9 +87,11 @@ type Line = {
     Length: float32
 }
 
+type StatBinner = SurveyData -> SurveyData -> Line -> string list
+type StatGather = SurveyData -> SurveyData -> Line -> float32
 
 type CaveGraph = Graph<SurveyData,string,Line>
-module CaveGraph = 
+module CaveGraph =
     let private cartographicLength (lineLengh:float32) (depthDifference:float32) = 
         if(lineLengh = 0.f) then 0.f
         else sqrt((lineLengh ** 2.f)-(depthDifference ** 2.f))
@@ -103,34 +105,46 @@ module CaveGraph =
     let calculateMapDistance caveGraph =
         caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.f
 
-    let private rx = new Text.RegularExpressions.Regex("<Explorer>(?<explorers>.*)</Explorer>.*?<Surveyor>(?<surveyors>.*?)</Surveyor>")
-    let parseExplorerSection (delim:string) (s:string) =
+    let rxMatch (rx:Text.RegularExpressions.Regex) s =
         let m = rx.Match(s)
-        let split (s:string) = s.Split(delim,StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim())
-        if m.Success then
-            m.Groups.["explorers"].Value |> split, m.Groups.["surveyors"].Value |> split
-        else 
-            ([|"UNK"|],[|"UNK"|])
+        if m.Success then Some(m) else None
+
+    let parseSection (rx:Text.RegularExpressions.Regex) (s:string) =
+        match rxMatch rx s with
+        | Some m -> m.Groups.[1].Value
+        | None -> "MISSING"
+        
+    let parseExplorerSection (delim:string) (s:string) =
+        let split (s:string) = s.Split(delim,StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim()) |> Array.toList
+        let rxE = new Text.RegularExpressions.Regex(".*<Explorer>(.*)</Explorer>")
+        let rxS = new Text.RegularExpressions.Regex(".*<Surveyor>(.*?)</Surveyor>")
+        (parseSection rxE s |> split, parseSection rxS s |> split)
 
     let private addOrCreate k v map = map |> Map.change k (function | None -> v |> Some | Some y -> Some(y + v))
     
-    let calcSwimLengthStatsSingle f (caveGraph:CaveGraph) = 
-        caveGraph
-        |> Undirected.Edges.fold (fun state stationFrom stationTo line -> addOrCreate (f stationFrom stationTo line) line.Length state) Map.empty
-
-
-    let calcSwimLengthStatsMany f (caveGraph:CaveGraph) = 
+    let calcSwimLength (binner:StatBinner) (caveGraph:CaveGraph) = 
         caveGraph
         |> Undirected.Edges.fold (fun sstate stationFrom stationTo line -> 
-            f stationFrom stationTo line 
-            |> Seq.fold (fun state exp -> state |> addOrCreate exp line.Length) sstate) Map.empty
+            binner stationFrom stationTo line 
+            |> Seq.fold (fun state bin -> state |> addOrCreate bin line.Length) sstate) Map.empty
 
-    let calcSwimLengthExplorers delim graph = calcSwimLengthStatsMany (fun _ stationTo _ -> 
-        parseExplorerSection delim stationTo.Explorer |> fst |> Array.append [|"TOTAL"|]) graph
-    let calcSwimLengthSurveyers delim graph = calcSwimLengthStatsMany (fun _ stationTo _ -> parseExplorerSection delim stationTo.Explorer |> snd) graph
-    
-    let test graph =
-        calcSwimLengthStatsMany (fun fromS toS line -> [toS.Color.Replace("#","").Replace("0x","")] ) graph 
+    type Binning =
+    | Explorer
+    | Surveyor
+    | Color
+    | Year
+    | Month
+
+    let calcBinnedSwimLength binner (caveGraph:CaveGraph) = 
+        let f (from:SurveyData) (too:SurveyData) (line:Line) = 
+                match binner with
+                | Explorer -> parseExplorerSection "," too.Explorer |> fst |> List.append ["TOTAL"] 
+                | Surveyor -> parseExplorerSection "," too.Explorer |> snd |> List.append ["TOTAL"]
+                | Color -> [too.Color.Replace("#","").Replace("0x","")]
+                | Year -> [string too.Date.Year]
+                | Month -> [sprintf "%i-%i" too.Date.Year too.Date.Month]
+        calcSwimLength f caveGraph
+
 
 module Tmlu = 
     open System.Xml.Serialization
