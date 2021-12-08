@@ -3,6 +3,29 @@ open Ariane.SaveFile.Contract
 open FSharp.FGL
 open System
 
+type CaveWorker = { Suerveyors:string list; Explorers:string list}
+module CaveWoker = 
+    open System.Text.RegularExpressions
+    let rxMatch (rx:Regex) s =
+        let m = rx.Match(s)
+        if m.Success then Some(m) else None
+    
+    let private split(delim:string)  (s:string) = 
+        s.Split(delim,StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim()) |> Array.toList
+    
+    let private parseSection (rx:Regex) delim (s:string) = 
+        match rxMatch rx s with
+        | Some m -> m.Groups.[1].Value |> (split delim)
+        | None -> []
+        
+    let parseExplorerSection (delim:string) (s:string) =
+        //todo: can bee 3 things, just string, just explorer, explorer and surveyor
+        let rxE = new Regex(".*<Explorer>(.*)</Explorer>")
+        let rxS = new Regex(".*<Surveyor>(.*?)</Surveyor>")
+        {Suerveyors = parseSection rxS delim s; Explorers = parseSection rxE delim s}
+
+    
+
 type Shape = {
     //TODO
     //[<XmlElement(ElementName = "SH")>]
@@ -105,20 +128,8 @@ module CaveGraph =
     let calculateMapDistance caveGraph =
         caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.f
 
-    let rxMatch (rx:Text.RegularExpressions.Regex) s =
-        let m = rx.Match(s)
-        if m.Success then Some(m) else None
-
-    let parseSection (rx:Text.RegularExpressions.Regex) (s:string) =
-        match rxMatch rx s with
-        | Some m -> m.Groups.[1].Value
-        | None -> "MISSING"
-        
     let parseExplorerSection (delim:string) (s:string) =
-        let split (s:string) = s.Split(delim,StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim()) |> Array.toList
-        let rxE = new Text.RegularExpressions.Regex(".*<Explorer>(.*)</Explorer>")
-        let rxS = new Text.RegularExpressions.Regex(".*<Surveyor>(.*?)</Surveyor>")
-        (parseSection rxE s |> split, parseSection rxS s |> split)
+        CaveWoker.parseExplorerSection delim s
 
     let private addOrCreate k v map = map |> Map.change k (function | None -> v |> Some | Some y -> Some(y + v))
     
@@ -135,11 +146,17 @@ module CaveGraph =
     | Year
     | Month
 
+    let private defaultIfEmpty def lst = 
+        match lst with 
+        | [] -> [def]
+        | x -> x
+
     let calcBinnedSwimLength binner (caveGraph:CaveGraph) = 
         let f (from:SurveyData) (too:SurveyData) (line:Line) = 
+                let exp = parseExplorerSection "," too.Explorer
                 match binner with
-                | Explorer -> parseExplorerSection "," too.Explorer |> fst |> List.append ["TOTAL"] 
-                | Surveyor -> parseExplorerSection "," too.Explorer |> snd |> List.append ["TOTAL"]
+                | Explorer -> exp.Explorers |> defaultIfEmpty "UNKNOWN" |> List.append ["TOTAL"] 
+                | Surveyor -> exp.Suerveyors |> defaultIfEmpty "UNKNOWN" |> List.append ["TOTAL"]
                 | Color -> [too.Color.Replace("#","").Replace("0x","")]
                 | Year -> [string too.Date.Year]
                 | Month -> [sprintf "%i-%i" too.Date.Year too.Date.Month]
