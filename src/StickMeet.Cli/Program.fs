@@ -4,7 +4,7 @@ open System
 
 type StatsArguments =
     | [<MainCommand>] File of filename:string
-    | Bin of CaveGraph.Binning
+    | Bin of Stats.Binning
     interface IArgParserTemplate with
         member s.Usage =
             match s with
@@ -23,7 +23,7 @@ let swimStats filename binner =
     filename 
         |> Tmlu.openTmlu  
         |> Tmlu.toGraph
-        |> CaveGraph.calcBinnedSwimLength binner
+        |> Stats.calcBinnedSwimLength binner
         |> Map.toList 
         |> List.sortBy snd 
         |> Seq.iter (printfn "%A") 

@@ -110,8 +110,6 @@ type Line = {
     Length: float32
 }
 
-type StatBinner = SurveyData -> SurveyData -> Line -> string list
-type StatGather = SurveyData -> SurveyData -> Line -> float32
 
 type CaveGraph = Graph<SurveyData,string,Line>
 module CaveGraph =
@@ -128,14 +126,16 @@ module CaveGraph =
     let calculateMapDistance caveGraph =
         caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.f
 
+module Stats =
+    type StatBinner = SurveyData -> SurveyData -> Line -> string list
+    type StatGather = SurveyData -> SurveyData -> Line -> float32
+
     let private addOrCreate k v map = map |> Map.change k (function | None -> v |> Some | Some y -> Some(y + v))
-    
     let calcSwimLength (binner:StatBinner) (caveGraph:CaveGraph) = 
         caveGraph
         |> Undirected.Edges.fold (fun sstate stationFrom stationTo line -> 
             binner stationFrom stationTo line 
             |> Seq.fold (fun state bin -> state |> addOrCreate bin line.Length) sstate) Map.empty
-
     type Binning =
     | Explorer
     | Surveyor
