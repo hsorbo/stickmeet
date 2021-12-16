@@ -37,3 +37,14 @@ module GeolibTests =
         let from = {Latitude = 52.518611; Longitude = 13.408056}
         let expected = {Latitude= 52.38386371; Longitude = 13.408056} //= {Latitude= 52.383712759112186; Longitude = 13.408056}
         test <@ Geolib.computeDestinationPoint from 15000. 180. |> eqToPrecision 5 expected @>
+
+module TreeTests = 
+    [<Fact>]
+    let pairwiseBf () =
+        let testTree = 
+            Node(1,[
+                Node(2,[
+                    Node(21,[])
+                    Node(22,[])])
+                Node(3,[])])
+        test <@ Tree.pairwiseBf testTree = [(1,2);(1,3);(2,21);(2,22)] @>

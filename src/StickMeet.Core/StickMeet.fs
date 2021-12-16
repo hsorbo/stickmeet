@@ -106,6 +106,39 @@ module SurveyData =
 
     let fromCaveFile (caveFile:CaveFile) =  caveFile.Data |> Seq.map srvdToSurveyData
 
+type Tree<'t> = | Node of 't * Tree<'t> list
+module Tree =
+    let fromTuple (n,s) = Node(n,s)
+    
+    // let rec fromTuple2<'a> (n:'a,s) : Tree<_> = 
+    //     Node(n,s |> List.map fromTuple2<'a>)
+    
+    let toTuple = function | Node (node, subtrees) -> (node, subtrees)
+    // let rec toTupleDeep = 
+    //     function | Node (node, subtrees) -> (node, subtrees |> List.map toTupleDeep)
+
+    let rec map mapper = function
+    | Node (node,lst) -> Node(mapper node, lst |> List.map (map mapper))
+
+    let rec fromAdjacencyList (adjacencyList:Map<_,list<_>>) nodeId =
+        //TODO: guard against loops?
+        let children = 
+            match adjacencyList |> Map.tryFind nodeId with
+            | Some x -> x
+            | None -> [] //printfn "%A EOL?" nodeId
+        Node(nodeId, [for y in children do fromAdjacencyList adjacencyList y])
+
+    let pairwiseBf node = 
+        let rec recurser nodes = 
+            match nodes with
+            | [] -> []
+            | node::tail -> 
+                let (data, children) = toTuple node
+                let mine = [for c in children do yield (data, c |> toTuple |> fst)]
+                mine @ recurser (tail @ children)
+        recurser [node]
+
+
 type Line = {
     Length: float
 }
