@@ -48,8 +48,8 @@
                 </xs:simpleType>
             </xs:element>
             <xs:element name="ZOrder" type="xs:nonNegativeInteger" />
-            <xs:element name="positionX" type="xs:decimal" />
-            <xs:element name="positionY" type="xs:decimal" />
+            <xs:element name="positionX" type="xs:double" />
+            <xs:element name="positionY" type="xs:double" />
         </xs:sequence>
     </xs:complexType>
     <xs:element name="CaveFile">
@@ -96,24 +96,24 @@
                             <xs:element name="SRVD" maxOccurs="unbounded">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="AZ" type="xs:float" />
+                                        <xs:element name="AZ" type="xs:double" />
                                         <xs:element name="CID" type="xs:int" />
                                         <xs:element name="CL" type="xs:string" />
                                         <xs:element name="CM" type="xs:string" />
                                         <xs:element name="DT" type="xs:date" />
-                                        <xs:element name="DP" type="xs:float" />
+                                        <xs:element name="DP" type="xs:double" />
                                         <xs:element name="DPI" type="xs:float" />
-                                        <xs:element name="D" type="xs:float" />
+                                        <xs:element name="D" type="xs:double" />
                                         <xs:element name="EXC" type="xs:boolean" />
                                         <xs:element name="EX" type="xs:string" />
                                         <xs:element name="FRID" type="xs:int" />
                                         <xs:element name="ID" type="xs:int" />
                                         <xs:element name="INC" type="xs:float" />
-                                        <xs:element name="LT" type="xs:decimal" />
-                                        <xs:element name="L" type="xs:float" />
+                                        <xs:element name="LT" type="xs:double" />
+                                        <xs:element name="L" type="xs:double" />
                                         <xs:element name="LG" type="xs:float" />
                                         <xs:element name="LK" type="xs:boolean" />
-                                        <xs:element name="LGT" type="xs:decimal" />
+                                        <xs:element name="LGT" type="xs:double" />
                                         <xs:element name="NM" type="xs:string" />
                                         <xs:element name="PRTY">
                                             <xs:simpleType>
@@ -123,7 +123,7 @@
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="R" type="xs:float" />
+                                        <xs:element name="R" type="xs:double" />
                                         <xs:element name="SC" type="xs:string" />
                                         <xs:element name="SH">
                                             <xs:complexType>
@@ -161,7 +161,7 @@
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="U" type="xs:float" />
+                                        <xs:element name="U" type="xs:double" />
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>

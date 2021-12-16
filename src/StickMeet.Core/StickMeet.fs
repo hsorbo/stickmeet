@@ -43,30 +43,30 @@ type Shape = {
 }
 type SurveyData = {
     Shape:Shape
-    Azimut:float32
+    Azimut:float
     ClosureToId:int
     Color:string
     Comment:string
     Date:DateTime
-    Depth:float32
+    Depth:float
     DepthIn:float32
-    Down:float32
+    Down:float
     Explorer:string
     Excluded:bool
     FromId:int
     Id:int
     Inclination:float32
-    Latitude:decimal
-    Left:float32
-    Length:float32
+    Latitude:float
+    Left:float
+    Length:float
     Locked:bool
-    Longitude:decimal
+    Longitude:float
     Name:string
     Profiletype:CaveFileDataSRVDPRTY 
-    Right:float32
+    Right:float
     Section:string
     Type:CaveFileDataSRVDTY
-    Up:float32
+    Up:float
     
 }
 
@@ -88,7 +88,7 @@ module SurveyData =
             Inclination = x.INC
             Latitude = x.LT
             Left = x.L
-            Length = x.LG
+            Length = float x.LG
             Locked = x.LK
             Longitude = x.LGT
             Name = x.NM
@@ -107,24 +107,23 @@ module SurveyData =
     let fromCaveFile (caveFile:CaveFile) =  caveFile.Data |> Seq.map srvdToSurveyData
 
 type Line = {
-    Length: float32
+    Length: float
 }
-
 
 type CaveGraph = Graph<SurveyData,string,Line>
 module CaveGraph =
-    let private cartographicLength (lineLengh:float32) (depthDifference:float32) = 
-        if(lineLengh = 0.f) then 0.f
-        else sqrt((lineLengh ** 2.f)-(depthDifference ** 2.f))
+    let private cartographicLength lineLengh depthDifference = 
+        if(lineLengh = 0.) then 0.
+        else sqrt((lineLengh ** 2.)-(depthDifference ** 2.))
 
     let private cartographicLength2 station1 station2 line =
         cartographicLength line.Length (abs(station1.Depth - station2.Depth))
 
     let calculateLineLength caveGraph =
-        caveGraph |> Undirected.Edges.fold (fun state _ _ line -> state + line.Length) 0f
+        caveGraph |> Undirected.Edges.fold (fun state _ _ line -> state + line.Length) 0.
 
     let calculateMapDistance caveGraph =
-        caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.f
+        caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.
 
 module Stats =
     type StatBinner = SurveyData -> SurveyData -> Line -> string list
