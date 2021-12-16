@@ -106,6 +106,13 @@ module SurveyData =
 
     let fromCaveFile (caveFile:CaveFile) =  caveFile.Data |> Seq.map srvdToSurveyData
 
+    let cartographicLength lineLengh depthDifference = 
+        if(lineLengh = 0.) then 0.
+        else sqrt((lineLengh ** 2.)-(depthDifference ** 2.))
+
+    let cartographicLength2 station1 station2 line =
+        cartographicLength line.Length (abs(station1.Depth - station2.Depth))
+
 type Tree<'t> = | Node of 't * Tree<'t> list
 module Tree =
     let fromTuple (n,s) = Node(n,s)
@@ -145,18 +152,13 @@ type Line = {
 
 type CaveGraph = Graph<SurveyData,string,Line>
 module CaveGraph =
-    let private cartographicLength lineLengh depthDifference = 
-        if(lineLengh = 0.) then 0.
-        else sqrt((lineLengh ** 2.)-(depthDifference ** 2.))
-
-    let private cartographicLength2 station1 station2 line =
-        cartographicLength line.Length (abs(station1.Depth - station2.Depth))
-
+   
     let calculateLineLength caveGraph =
         caveGraph |> Undirected.Edges.fold (fun state _ _ line -> state + line.Length) 0.
 
     let calculateMapDistance caveGraph =
-        caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (cartographicLength2 ffrom tto line)) 0.
+        caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (SurveyData.cartographicLength2 ffrom tto line)) 0.
+
 
 module Stats =
     type StatBinner = SurveyData -> SurveyData -> Line -> string list
