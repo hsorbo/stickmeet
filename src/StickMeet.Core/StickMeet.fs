@@ -71,7 +71,7 @@ type SurveyData = {
 }
 
 module SurveyData =
-    let private srvdToSurveyData (x:CaveFileDataSRVD) = 
+    let srvdToSurveyData (x:CaveFileDataSRVD) = 
         {
             Azimut = x.AZ
             ClosureToId = x.CID
@@ -116,14 +116,7 @@ module SurveyData =
 type Tree<'t> = | Node of 't * Tree<'t> list
 module Tree =
     let fromTuple (n,s) = Node(n,s)
-    
-    // let rec fromTuple2<'a> (n:'a,s) : Tree<_> = 
-    //     Node(n,s |> List.map fromTuple2<'a>)
-    
     let toTuple = function | Node (node, subtrees) -> (node, subtrees)
-    // let rec toTupleDeep = 
-    //     function | Node (node, subtrees) -> (node, subtrees |> List.map toTupleDeep)
-
     let rec map mapper = function
     | Node (node,lst) -> Node(mapper node, lst |> List.map (map mapper))
 
@@ -158,6 +151,34 @@ module CaveGraph =
 
     let calculateMapDistance caveGraph =
         caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (SurveyData.cartographicLength2 ffrom tto line)) 0.
+
+    let getCoordinates workTree =
+        let startState =
+            let startn = workTree |> Tree.toTuple |> fst
+            let startGeo = {Latitude = startn.Latitude; Longitude = startn.Longitude}
+            [(startn.Id, startGeo)] |> Map.ofList
+
+        let folder state (parent,child) =
+            let parentPos = state |> Map.find parent.Id
+            let length = SurveyData.cartographicLength2 parent child child 
+            let ny = Geolib.computeDestinationPoint parentPos length child.Azimut
+            state |> Map.add child.Id ny
+        workTree |> Tree.pairwiseBf |> List.fold folder startState
+
+    let toAdjacencyList (data:CaveFileDataSRVD seq) =
+        data 
+            |> Seq.map (fun x -> (x.FRID, x.ID)) 
+            |> Seq.groupBy fst
+            |> Seq.map (fun (fromid,tups) -> (fromid,tups |> Seq.map snd |> Seq.toList))
+            |> Map.ofSeq
+    
+    let toSurveyTrees (data:CaveFileDataSRVD seq) =
+        let adjacencyList = data |> toAdjacencyList
+        let all = data |> Seq.map (fun x -> (x.ID, x |> SurveyData.srvdToSurveyData)) |> Map.ofSeq
+        adjacencyList 
+            |> Map.find -1
+            |> List.map (Tree.fromAdjacencyList adjacencyList)
+            |> List.map (fun tree -> tree |> Tree.map (fun x ->  all |> Map.find x))
 
 
 module Stats =
