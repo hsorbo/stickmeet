@@ -14,9 +14,20 @@ module MathUtils =
 
 type Geo = {Latitude:float;Longitude:float}
 module Geo =
+    let private split (delim:string) (str:string) = str.Split(delim, StringSplitOptions.RemoveEmptyEntries)
+    let private join separator (strs:string seq) = String.Join(separator, strs)
+
     let map m x = { Latitude = m x.Latitude; Longitude = m x.Longitude}
     let combine m x y = {Latitude = m x.Latitude y.Latitude; Longitude = m x.Longitude y.Longitude}
     let toRad x = x |> map rad 
+    let toGeoString geo = sprintf "%.15f,%.15f,%i" geo.Longitude geo.Latitude 0
+    let toGeoStrings geo = geo |> Seq.map toGeoString |> join " "
+    
+    // let parseGeoString s = 
+    //     s 
+    //     |> split " "
+    //     |> Array.map (fun x -> x |> 
+    //         let components = split "," )
 
 module Geolib =
     //https://github.com/manuelbieh/geolib
@@ -82,3 +93,4 @@ module Geolib =
         let norm x = (x + 360.) % 360.
         getGreatCircleBearingRadians (orig |> Geo.toRad) (dest |> Geo.toRad) |> deg |> norm
 
+    

@@ -138,20 +138,7 @@ module Tree =
                 mine @ recurser (tail @ children)
         recurser [node]
 
-
-type Line = {
-    Length: float
-}
-
-type CaveGraph = Graph<SurveyData,string,Line>
-module CaveGraph =
-   
-    let calculateLineLength caveGraph =
-        caveGraph |> Undirected.Edges.fold (fun state _ _ line -> state + line.Length) 0.
-
-    let calculateMapDistance caveGraph =
-        caveGraph |> Undirected.Edges.fold (fun state ffrom tto line -> state + (SurveyData.cartographicLength2 ffrom tto line)) 0.
-
+module GeoMap =
     let getCoordinates workTree =
         let startState =
             let startn = workTree |> Tree.toTuple |> fst
@@ -161,6 +148,7 @@ module CaveGraph =
         let folder state (parent,child) =
             let parentPos = state |> Map.find parent.Id
             let length = SurveyData.cartographicLength2 parent child child 
+            //let length = child.Length
             let ny = Geolib.computeDestinationPoint parentPos length child.Azimut
             state |> Map.add child.Id ny
         workTree |> Tree.pairwiseBf |> List.fold folder startState
@@ -180,10 +168,11 @@ module CaveGraph =
             |> List.map (Tree.fromAdjacencyList adjacencyList)
             |> List.map (fun tree -> tree |> Tree.map (fun x ->  all |> Map.find x))
 
-
 module Stats =
+    type Line = {Length: float}
+    type CaveGraph = Graph<SurveyData,string,Line>
     type StatBinner = SurveyData -> SurveyData -> Line -> string list
-    type StatGather = SurveyData -> SurveyData -> Line -> float32
+    type StatGather = SurveyData -> SurveyData -> Line -> float
 
     let private addOrCreate k v map = map |> Map.change k (function | None -> v |> Some | Some y -> Some(y + v))
     let calcSwimLength (binner:StatBinner) (caveGraph:CaveGraph) = 
@@ -204,7 +193,7 @@ module Stats =
         | x -> x
 
     let calcBinnedSwimLength binner (caveGraph:CaveGraph) = 
-        let f (from:SurveyData) (too:SurveyData) (line:Line) = 
+        let f _ (too:SurveyData) _ = 
                 let exp = CaveWorker.parseExplorerSection "," too.Explorer
                 match binner with
                 | Explorer -> exp.Explorers |> defaultIfEmpty "UNKNOWN" |> List.append ["TOTAL"] 
@@ -224,7 +213,7 @@ module Tmlu =
         use f = File.OpenRead filename
         xmlserializer.Deserialize f :?> CaveFile
 
-    let toGraph (cavefile:CaveFile) : CaveGraph =
+    let toGraph (cavefile:CaveFile) : Stats.CaveGraph =
         let surveyData = cavefile |> SurveyData.fromCaveFile
         let surveymap = surveyData |> Seq.map (fun x -> (x.Id, x)) |> Map.ofSeq
         let stations = surveyData |> Seq.fold (fun state x -> state |> Vertices.add (x, x.Comment)) Graph.empty
