@@ -35,8 +35,9 @@ type Arguments =
 
 let swimStats filename binner =
     filename 
-        |> Tmlu.openTmlu  
-        |> Tmlu.toGraph
+        |> Tmlu.openTmlu 
+        |> SurveyData.fromCaveFile 
+        |> Stats.toGraph
         |> Stats.calcBinnedSwimLength binner
         |> Map.toList 
         |> List.sortBy snd 

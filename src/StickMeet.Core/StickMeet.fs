@@ -148,7 +148,6 @@ module GeoMap =
         let folder state (parent,child) =
             let parentPos = state |> Map.find parent.Id
             let length = SurveyData.cartographicLength2 parent child child 
-            //let length = child.Length
             let ny = Geolib.computeDestinationPoint parentPos length child.Azimut
             state |> Map.add child.Id ny
         workTree |> Tree.pairwiseBf |> List.fold folder startState
@@ -203,6 +202,12 @@ module Stats =
                 | Month -> [sprintf "%i-%i" too.Date.Year too.Date.Month]
         calcSwimLength f caveGraph
 
+    let toGraph surveyData : CaveGraph =
+        let surveymap = surveyData |> Seq.map (fun x -> (x.Id, x)) |> Map.ofSeq
+        let stations = surveyData |> Seq.fold (fun state x -> state |> Vertices.add (x, x.Comment)) Graph.empty
+        surveyData |> Seq.fold (fun state x -> 
+            if x.FromId = -1 then state 
+            else state |> Undirected.Edges.add (surveymap |> Map.find x.FromId, x, {Length = x.Length})) stations
 
 module Tmlu = 
     open System.Xml.Serialization
@@ -213,13 +218,4 @@ module Tmlu =
         use f = File.OpenRead filename
         xmlserializer.Deserialize f :?> CaveFile
 
-    let toGraph (cavefile:CaveFile) : Stats.CaveGraph =
-        let surveyData = cavefile |> SurveyData.fromCaveFile
-        let surveymap = surveyData |> Seq.map (fun x -> (x.Id, x)) |> Map.ofSeq
-        let stations = surveyData |> Seq.fold (fun state x -> state |> Vertices.add (x, x.Comment)) Graph.empty
-        surveyData |> Seq.fold (fun state x -> 
-            if x.FromId = -1 then state 
-            else state |> Undirected.Edges.add (surveymap |> Map.find x.FromId, x, {Length = x.Length})) stations
-
-    let openTmluGraph filename = openTmlu filename |> toGraph
     
