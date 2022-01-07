@@ -44,7 +44,11 @@ def decode(data):
     while True:
         hdr_data = data[x:x+HEADER_LEN]
         if len(hdr_data) < HEADER_LEN: break
-        survey=parse_survey_header(hdr_data)
+        try:
+            survey=parse_survey_header(hdr_data)
+        except:
+            sys.stderr.write("Failed to parse header at offset %d, ignoring\n" % x)
+            break
         x+=HEADER_LEN
         shots = []
         for i in range(x,10000,SHOT_LEN):
