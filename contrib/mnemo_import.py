@@ -8,6 +8,7 @@ import argparse
 from serial.tools import list_ports
 import time
 from datetime import datetime
+import sys
 
 def to_signed(byte) -> int:
     integer = int(byte.hex(), 16)
@@ -67,10 +68,13 @@ if __name__ == '__main__':
     tty = args.tty if args.tty else detect()
     verbose = True if args.output else False
     if not tty:
-        print("No tty specified/detected")
+        sys.stderr.write("No tty specified/detected\n")
         exit(1)
-    print(tty)
-    dmp = format_dmp(import_data(tty, verbose))
+    data = import_data(tty, verbose)
+    if len(data) == 0:
+        sys.stderr.write("No data found\n")
+        exit(1)
+    dmp = format_dmp(data)
     if args.output:
         with open(args.output, 'wb') as f:
             f.write(dmp.encode())
