@@ -53,7 +53,7 @@ def import_data(device, verbose=False):
 
 def detect():
     for port in list_ports.comports():
-        if "cu.usbmodem" in port.device:
+        if port.product != None and port.product.startswith("MCP2221 USB"):
             return port.device
     return ""
 
