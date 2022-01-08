@@ -58,7 +58,7 @@ def detect():
             return port.device
     return ""
 
-def format_dmp(raw_data): return ';'.join(str(e) for e in raw_data)
+def format_dmp(raw_data): return ';'.join(str(e) for e in raw_data) + ";"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
