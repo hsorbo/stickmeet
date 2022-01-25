@@ -5,7 +5,7 @@ def to_unsigned(x): return x if x > -1  else 256 + x
 def to_signed(x):   return x if x < 128 else -256+x
 
 def decode(semicolon_separated):
-    string_bytes = [l for l in semicolon_separated.split(';') if l.strip()]
+    string_bytes = [l for l in semicolon_separated.decode("ascii").split(';') if l.strip()]
     return bytearray(map(to_unsigned,map(int,string_bytes)))
 
 def encode(raw_data):
