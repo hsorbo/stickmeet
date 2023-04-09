@@ -11,6 +11,8 @@ from datetime import datetime
 import sys
 from enum import Enum
 
+V2_EOF = b'MN2Over'
+
 class Version(Enum):
     V1 = 1
     V2 = 2
@@ -59,6 +61,10 @@ def import_data(device, version : Version, verbose : bool = False):
             c = 0
     if ser.is_open:
         ser.close()
+    if version == Version.V2:
+        if dump_file[-len(V2_EOF):] != list(V2_EOF):
+            raise("Error: dump file did not end with %s" % V2_EOF)
+        return dump_file[0:-len(V2_EOF)]
     return dump_file
 
 def detect():
