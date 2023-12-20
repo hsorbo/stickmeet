@@ -3,11 +3,16 @@ import sys
 import struct
 import datetime
 import json
+from enum import Enum
 
 HEADER_LEN=10
 SHOT_LEN=16
 DIRECTION=["IN","OUT"]
-SHOT_TYPE=["CSA","CSB","STD","EOC"]
+class ShotType(Enum):
+    CSA = 0
+    CSB = 1
+    STD = 2
+    EOC = 3
 
 def to_unsigned(x): return x if x > -1 else 256 + x
 
@@ -22,12 +27,12 @@ def parse_survey_header(data):
     return {
         "date": datetime.datetime(2000+year, month, day, hh, mm).isoformat(),
         "name": name.decode("utf-8"),
-        "direction":DIRECTION[direction]}
+        "direction":direction}
 
 def parse_survey_shot(data):
     s = struct.unpack(">bhhhhhhhb",data)
     return {
-        "type": SHOT_TYPE[s[0]],
+        "type": s[0],
         "head_in": s[1]/10,
         "head_out": s[2]/10,
         "length": s[3]/100,
@@ -57,7 +62,7 @@ def decode(data):
             shot = parse_survey_shot(shot_arr)
             shots.append(shot)
             x += SHOT_LEN
-            if shot["type"] == "EOC": break
+            if shot["type"] == ShotType.EOC.value: break
         survey["shots"] = shots
         surveys.append(survey)
     return surveys
